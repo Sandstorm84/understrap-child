@@ -1,0 +1,9 @@
+.member-table{
+  min-width: 70%;
+  
+  & > tbody > tr:first-child
+  {
+    font-weight:bold;
+    color:$secondary;
+  }
+}

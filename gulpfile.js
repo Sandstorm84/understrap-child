@@ -52,6 +52,17 @@ gulp.task( 'watch', function() {
 });
 
 // Run:
+// gulp watch-dist
+// Starts watcher. Watcher runs gulp sass task on changes, and then dist without cleaning (to avoid ftp sync errors)
+gulp.task( 'watch-dist', function() {
+  gulp.watch( `${paths.sass}/**/*.scss`, gulp.series('styles', 'dist-noclean') );
+  gulp.watch( [`${paths.dev}/js/**/*.js`, 'js/**/*.js', '!js/child-theme.js', '!js/child-theme.min.js'], gulp.series('scripts', 'dist-noclean') );
+
+  //Inside the watch task.
+  gulp.watch( `${paths.imgsrc} /**`, gulp.series('imagemin-watch', 'dist-noclean') );
+});
+
+// Run:
 // gulp imagemin
 // Running image optimizing task
 gulp.task( 'imagemin', function() {
@@ -225,6 +236,22 @@ gulp.task( 'dist', gulp.series('clean-dist', function copyToDistFolder() {
   .pipe( replace( '/js/popper.min.js', `/js${paths.vendor}/popper.min.js`, { 'skipBinary': true } ) )
   .pipe( replace( '/js/skip-link-focus-fix.js', `/js${paths.vendor}/skip-link-focus-fix.js`, { 'skipBinary': true } ) )
     .pipe( gulp.dest( paths.dist ) );
+}));
+
+// Run
+// gulp dist-noclean
+// Copies the files to the /dist folder for distribution as simple theme
+gulp.task( 'dist-noclean', gulp.series(function copyToDistFolder() {
+  const ignorePaths = [`!${paths.bower}`, `!${paths.bower}/**`, `!${paths.node}`, `!${paths.node}/**`, `!${paths.dev}`, `!${paths.dev}/**`, `!${paths.dist}`, `!${paths.dist}/**`, `!${paths.distprod}`, `!${paths.distprod}/**`, `!${paths.sass}`, `!${paths.sass}/**`],
+  ignoreFiles = [ '!readme.txt', '!readme.md', '!package.json', '!package-lock.json', '!gulpfile.js', '!gulpconfig.json', '!CHANGELOG.md', '!.travis.yml', '!jshintignore',  '!codesniffer.ruleset.xml' ];
+
+  console.log({ ignorePaths, ignoreFiles })
+
+return gulp.src( ['**/*', ...ignorePaths, ...ignoreFiles,  '*'], { 'buffer': false } )
+.pipe( replace( '/js/jquery.slim.min.js', `/js${paths.vendor}/jquery.slim.min.js`, { 'skipBinary': true } ) )
+.pipe( replace( '/js/popper.min.js', `/js${paths.vendor}/popper.min.js`, { 'skipBinary': true } ) )
+.pipe( replace( '/js/skip-link-focus-fix.js', `/js${paths.vendor}/skip-link-focus-fix.js`, { 'skipBinary': true } ) )
+  .pipe( gulp.dest( paths.dist ) );
 }));
 
 // Deleting any file inside the /dist-product folder
